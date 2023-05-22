@@ -10,6 +10,7 @@ class Wards extends Model
     public $timestamps = false;
     protected $fillable = [
         'name_xaphuong','type','maph',
+
     ];
     protected $primaryKey  = 'xaid';
     protected $table = 'tbl_xaphuongthitran';

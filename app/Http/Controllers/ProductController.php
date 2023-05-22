@@ -6,7 +6,10 @@ use Illuminate\Http\Request;
 use DB;
 use Session;
 use App\Slider;
+use File;
 use App\Http\Requests;
+use App\Models\Gallery;
+use App\Models\Color;
 use Illuminate\Support\Facades\Redirect;
 session_start();
 
@@ -21,17 +24,18 @@ class ProductController extends Controller
      }
     public function add_product(){
         $this->AuthLogin();
-        $cate_product = DB::table('tbl_category_product')->orderby('category_id','desc')->get();
-         $brand_product = DB::table('tbl_brand')->orderby('brand_id','desc')->get();
-
-        return view('admin.add_product')->with('cate_product', $cate_product)->with('brand_product', $brand_product);
+        $cate_product = DB::table('tbl_category_product')->orderby('category_id','DESC')->get();
+         $brand_product = DB::table('tbl_brand')->orderby('brand_id','DESC')->get();
+         $all_color =  Color::all();
+         return view('admin.add_product')->with('cate_product', $cate_product)
+         ->with('brand_product', $brand_product)->with('all_color', $all_color);
     }
     public function all_product(){
         $this->AuthLogin();
         $all_product = DB::table('tbl_product')
         ->join('tbl_category_product','tbl_category_product.category_id','=','tbl_product.category_id')
         ->join('tbl_brand','tbl_brand.brand_id','tbl_product.brand_id')
-        ->orderby('tbl_product.product_id','desc')->get();
+        ->orderby('tbl_product.product_id','DESC')->get();
         $manager_product  = view('admin.all_product')->with('all_product',
             $all_product);
         return view('admin_layout')->with('admin.all_product', $manager_product);
@@ -42,6 +46,8 @@ class ProductController extends Controller
         $data = array();
         $data['product_name'] = $request->product_name;
         $data['product_quantity'] = $request->product_name;
+        $data['product_sold'] = $request->product_sold;
+        $data['product_color'] = $request->product_color;
         $data['product_price'] = $request->product_price;
         $data['product_desc'] = $request->product_desc;
         $data['product_content'] = $request->product_content;
@@ -51,21 +57,26 @@ class ProductController extends Controller
         $data['product_image'] = $request->product_image;
         $get_image = $request->file('product_image');
 
+        $path = 'public/uploads/product/';
+        $path_gallery = 'public/uploads/gallery/';
         if($get_image){
             $get_name_image = $get_image->getClientOriginalName();
             $name_image = current(explode('.',$get_name_image));
             $new_image = $name_image.rand(0,99).'.'.$get_image->getClientOriginalExtension();
-            $get_image->move('public/uploads/product', $get_name_image);
-
-            $data['product_image'] = $get_name_image;
-            DB::table('tbl_product')->insert($data);
-            Session::put('message','Thêm sản phẩm thành công!');
-            return Redirect::to('add-product');
+            $get_image->move($path, $new_image);
+            File::copy($path.$new_image,$path_gallery.$new_image );
+            $data['product_image'] = $new_image;
+            
         }
-        $data['product_image'] = '';
-        DB::table('tbl_product')->insert($data);
+
+        $pro_id = DB::table('tbl_product')->insertGetId($data);
+        $gallery = new Gallery();
+        $gallery->gallery_name = $new_image;
+        $gallery->gallery_image = $new_image;
+        $gallery->product_id = $pro_id;
+        $gallery->save();
         Session::put('message','Thêm sản phẩm thành công!');
-        return Redirect::to('all-product');
+        return Redirect::to('add-product');
     }
     public function unactive_product($product_id){
         $this->AuthLogin();
@@ -130,25 +141,28 @@ class ProductController extends Controller
     public function details_product(Request $request,$product_id){
         $cate_product = DB::table('tbl_category_product')->where('category_status','1')->orderby('category_id','desc')->get();
 
-         $brand_product = DB::table('tbl_brand')->where('brand_status','1')->orderby('brand_id','desc')->get();
-          $details_product = DB::table('tbl_product')
+        $brand_product = DB::table('tbl_brand')->where('brand_status','1')->orderby('brand_id','DESC')->get();
+        $details_product = DB::table('tbl_product')
         ->join('tbl_category_product','tbl_category_product.category_id','=','tbl_product.category_id')
         ->join('tbl_brand','tbl_brand.brand_id','=','tbl_product.brand_id')
         ->where('tbl_product.product_id',$product_id)->get();
 
         foreach($details_product as $key => $value){
             $category_id = $value->category_id;
+            $product_id = $value->product_id;
+
             $meta_desc = $value->product_desc;
             $meta_keywords = $value->product_desc;
             $meta_title = $value->product_name;
             $url_canonical = $request->url();
             }
+        $gallery = Gallery::where('product_id',$product_id)->get();
         $related_product = DB::table('tbl_product')
             ->join('tbl_category_product','tbl_category_product.category_id','=','tbl_product.category_id')
             ->join('tbl_brand','tbl_brand.brand_id','=','tbl_product.brand_id')
             ->where('tbl_category_product.category_id',$category_id)->whereNotIn('tbl_product.category_id',[$category_id])->get();
 
         return view('pages.sanpham.show_details')->with('category',$cate_product)->with('brand', $brand_product)->with('product_details',$details_product)->with('relate',$related_product) ->with('meta_desc',$meta_desc)->with('meta_keywords',$meta_keywords)
-        ->with('meta_title',$meta_title)->with('url_canonical',$url_canonical);
+        ->with('meta_title',$meta_title)->with('url_canonical',$url_canonical)->with('gallery',$gallery);
     }
 }

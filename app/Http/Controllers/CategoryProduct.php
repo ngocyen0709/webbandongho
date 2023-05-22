@@ -7,6 +7,7 @@ use Session;
 use App\Models\CategoryProductModel;
 use App\Models\Product;
 use App\Http\Requests;
+
 use Illuminate\Support\Facades\Redirect;
 session_start();
 
@@ -86,31 +87,42 @@ class CategoryProduct extends Controller
 
         $brand_product = DB::table('tbl_brand')->where('brand_status','1')->orderby('brand_id','desc')->get();
 
+        // $category_by_slug = CategoryProductModel::wherer('slug_category_product',$slug_category_product)->get();
+
+        $min_price = Product::min('product_price');
+        $max_price = Product::max('product_price');
+
+        $min_price_range = $min_price - 500000;
+        $max_price_range = $max_price + 1000000;
+        // foreach($category_by_slug as $key => $cate){
+        //     $category_id = $cate->category_id;
+        // }
+
         if(isset($_GET['sort_by'])){
             $sort_by = $_GET['sort_by'];
 
             if($sort_by == 'giam_dan'){
                 $category_by_id = Product::with('category')->where('category_id',$category_id)->orderBy('product_price','DESC')
-                ->paginate(6);
+                ->paginate(8);
             }elseif($sort_by == 'tang_dan'){
                 $category_by_id = Product::with('category')->where('category_id',$category_id)->orderBy('product_price','ASC')
-                ->paginate(6);
+                ->paginate(8);
             }elseif($sort_by == 'kytu_za'){
                 $category_by_id = Product::with('category')->where('category_id',$category_id)->orderBy('product_name','DESC')
-                ->paginate(6);
+                ->paginate(8);
             }elseif($sort_by == 'kytu_az'){
                 $category_by_id = Product::with('category')->where('category_id',$category_id)->orderBy('product_name','ASC')
-                ->paginate(6);
+                ->paginate(8);
             }
         }elseif(isset($_GET['start_price']) && $_GET['end_price']){
             $min_price = $_GET['start_price'];
             $max_price =   $_GET['end_price'];
 
             $category_by_id = Product::with('category')->whereBetween('product_price',[$min_price, $max_price])->orderBy('product_price','ASC')
-                ->paginate(6)->appends(request()->query());
+                ->paginate(8)->appends(request()->query());
         }else{
             $category_by_id = Product::with('category')->where('category_id',$category_id)->orderBy('product_id','DESC')
-                ->paginate(6);
+                ->paginate(8);
         }
 
 
@@ -130,6 +142,6 @@ class CategoryProduct extends Controller
         ->with('category_by_id', $category_by_id)
         ->with('category_name',$category_name)->with('meta_desc',$meta_desc)
         ->with('meta_keywords',$meta_keywords)->with('meta_title',$meta_title)
-        ->with('url_canonical',$url_canonical);
+        ->with('url_canonical',$url_canonical)->with('min_price',$min_price)->with('max_price',$max_price);
     }
 }

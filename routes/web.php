@@ -12,14 +12,18 @@ use App\Http\Controllers\CouponController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\OderController;
+use App\Http\Controllers\GalleryController;
 //user
 
 Route::get('/add-user',[UserController::class, 'add_user']);
 Route::get('/all-user',[UserController::class,'all_user']);
 
+Route::get('/edit-infomation-user/{customer_id}',[HomeController::class,'edit_infomation_user'])->name('customer.edit_infomation_user');
 Route::get('/', [HomeController::class, 'index']);
 Route::get('/trangchu', [HomeController::class, 'index']);
 Route::post('/timkiem', [HomeController::class, 'search']);
+Route::post('/update-user/{customer_id}', [HomeController::class, 'update_user']);
+Route::get('/infomation/{customer_id}', [HomeController::class,'infomation'])->name('customer.infomation');
 
 //danh mục sản phảm Tc
 Route::get('/danh-muc-san-pham/{category_id}', [CategoryProduct::class, 'hien_thi_danh_muc_trang_chu']);
@@ -93,16 +97,20 @@ Route::get('/checkout', [CheckoutController::class,'checkout']);
 Route::get('/tratien', [CheckoutController::class,'tratien']);
 Route::post('/save-checkout-customer', [CheckoutController::class,'save_checkout_customer']);
 
+
 Route::post('/select-delivery-home', [CheckoutController::class,'select_delivery_home']);
 Route::post('/calculate-fee', [CheckoutController::class,'calculate_fee']);
+
 
 
 //order
 Route::get('/print-order/{checkout_code}', [OderController::class,'print_order']);
 Route::get('/manage-order', [OderController::class,'manage_order']);
 Route::get('/view-order/{order_code}', [OderController::class,'view_order']);
+Route::get('/view-order-customer/{order_code}', [OderController::class,'view_order_customer']);
 Route::post('/update-order-qty', [OderController::class,'update_order_qty']);
 Route::post('/update-qty', [OderController::class,'update_qty']);
+Route::get('/history', [OderController::class,'history']);
 //coupon
 Route::post('/check-coupon', [CartController::class,'check_coupon']);
 Route::get('/unset-coupon', [CouponController::class,'unset_coupon']);
@@ -116,6 +124,8 @@ Route::get('/send-mail', [HomeController::class,'send_mail']);
 Route::get('/login-facebook', [AdminController::class,'login_facebook']);
 Route::get('/quanli/callback', [AdminController::class,'callback_facebook']);
 Route::post('filter-by-date', [AdminController::class,'filter_by_date']);
+Route::post('dashboard-filter', [AdminController::class,'dashboard_filter']);
+Route::post('days-order', [AdminController::class,'days_order']);
 
 //đăng nhập google
 Route::get('/login-google', [AdminController::class,'login_google']);
@@ -126,4 +136,12 @@ Route::get('/delivery', [DeliveryController::class,'delivery']);
 Route::post('/select-delivery', [DeliveryController::class,'select_delivery']);
 Route::post('/insert-delivery', [DeliveryController::class,'insert_delivery']);
 Route::post('/select-feeship', [DeliveryController::class,'select_feeship']);
-Route::post('/update-delivery', [DeliveryController::class,'update_delivery']);
+Route::post('/update-delivery', [DeliveryController::class,'upd ate_delivery']);
+
+//gallery
+Route::get('/add-gallery/{product_id}', [GalleryController::class,'add_gallery']);
+Route::post('/select-gallery', [GalleryController::class,'select_gallery']);
+Route::post('/insert-gallery/{pro_id}', [GalleryController::class,'insert_gallery']);
+Route::post('/update-gallery-name', [GalleryController::class,'update_gallery_name']);
+Route::post('/delete-gallery', [GalleryController::class,'delete_gallery']);
+Route::post('/update-gallery', [GalleryController::class,'update_gallery']);

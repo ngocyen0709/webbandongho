@@ -100,5 +100,4 @@
     </footer>
   </div>
 </div>
-
 @endsection

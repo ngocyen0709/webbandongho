@@ -1,12 +1,15 @@
 <?php
 
 namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+use App\Models\Feeship;
 use App\Models\City;
 use App\Models\Province;
 use App\Models\Wards;
-use App\Models\Feeship;
-use Illuminate\Http\Request;
-
+use Session;
+use DB;
 class DeliveryController extends Controller
 {
     public function update_delivery(Request $request){
@@ -52,11 +55,11 @@ class DeliveryController extends Controller
 		$fee_ship = new Feeship();
 		$fee_ship->fee_matp = $data['city'];
 		$fee_ship->fee_maqh = $data['province'];
-		$fee_ship->fee_xaid = $data['wards'];
+		$fee_ship->fee_xaid = $data['ward'];
 		$fee_ship->fee_feeship = $data['fee_ship'];
 		$fee_ship->save();
 	}
-    public function delivery(){
+    public function delivery(Request $request){
         $city = City::orderby('matp','ASC')->get();
         return view('admin.delivery.add_delivery')->with(compact('city'));
     }
@@ -72,12 +75,13 @@ class DeliveryController extends Controller
                 }
             }else{
                 $select_wards = Wards::where('maqh',$data['ma_id'])->orderby('xaid','ASC')->get();
-                $output.='<option>----Chọn quận huyện----</option>';
+                $output.='<option>----Chọn xã phường----</option>';
                 foreach($select_wards as $key => $ward){
                     $output.='<option value="'.$ward->xaid.'">'.$ward->name_xaphuong.'</option>';
                 }
             }
         }
         echo $output;
+
     }
 }

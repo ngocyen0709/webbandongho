@@ -2,19 +2,35 @@
 @section('content')
 @foreach($product_details as $key => $value)
 <div class="product-details"><!--product-details-->
+	<style type="text/css">
+		.lSSlideOuter .lSPager.lSGallery img {
+			display: block;
+			height: 140px;
+			max-width: 100%;
+		}
+		li.active{
+			border: 1px solid #FE980F;
+		}
+		
+	</style>
 	<div class="col-sm-5">
-		<div class="view-product">
-			<img src="{{URL::to('/public/uploads/product/'.$value->product_image)}}" alt="" />
-			<h3>ZOOM</h3>
-		</div>
+		<!-- <img src="{{URL::to('/public/uploads/product/'.$value->product_image)}}" alt="" /> -->
+		<ul id="imageGallery">
+			@foreach($gallery as $key =>$gal)
+			<li data-thumb="{{asset('/public/uploads/gallery/'.$gal->gallery_image)}}" data-src="{{URL::to('/public/uploads/gallery/'.$gal->gallery_image)}}" style="height:100%;">
+				<img width="100%" height="100%" src="{{asset('/public/uploads/gallery/'.$gal->gallery_image)}}" />
+			</li>
+			@endforeach
+		</ul>
 	</div>
+	
 	<div class="col-sm-7">
 		<div class="product-information"><!--/product-information-->
-			<img src="images/product-details/new.jpg" class="newarrival" alt="" />
+			<!-- <img src="images/product-details/new.jpg" class="newarrival" alt="" /> -->
 				<h2>{{$value->product_name}}</h2>
 				<p>Mã ID: {{$value->product_id}}</h2>
 				<p>Thông tin chi tiết: </br> {{$value->product_content}}</p>
-				<img src="images/product-details/rating.png" alt="" />
+				<!-- <img src="images/product-details/rating.png" alt="" /> -->
 				
 			<form action="{{URL::to('/save-cart')}}" method="POST">
 				{{csrf_field()}}
@@ -57,7 +73,7 @@
 			<p><b>Thương hiệu:</b> {{$value->brand_name}}</p>
 			<p><b>Danh mục:</b> {{$value->category_name}}</p>
 			<p><b>Nhà cung cấp:</b> Hàng mới 100%</p>
-			<a href=""><img src="images/product-details/share.png" class="share img-responsive"  alt="" /></a>
+			<!-- <a href=""><img src="images/product-details/share.png" class="share img-responsive"  alt="" /></a> -->
 		</div><!--/product-information-->
 	</div>
 </div>

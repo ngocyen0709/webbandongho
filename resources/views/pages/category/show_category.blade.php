@@ -3,7 +3,7 @@
 <div class="features_items"> 
     <div class="fb-like" data-href="{{$url_canonical}}" data-width="" data-layout="button_count" data-action="like" data-size="small" data-share="true"></div>
 
-     @foreach($category_name as $key => $name)
+    @foreach($category_name as $key => $name)
    
     <h2 class="title text-center">{{$name->category_name}}</h2>
 
@@ -18,7 +18,7 @@
                 <img src="{{URL::to('public/uploads/product/'.$product->product_image)}}" alt="" />
                 <h2>{{number_format($product->product_price,0,',','.').' '.'VNĐ'}}</h2>
                 <p> {{$product->product_name}} </p>
-                <a href="#" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Thêm giỏ hàng</a>
+                <a href="#" class=" check_out btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Thêm giỏ hàng</a>
             </div>
             </div>
             <div class="choose">

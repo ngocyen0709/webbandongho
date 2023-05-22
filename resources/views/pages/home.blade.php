@@ -49,4 +49,4 @@
                 height: 160px;
             }
         </style>
-@endsection
+@endsection 

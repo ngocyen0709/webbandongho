@@ -26,11 +26,16 @@ class CheckoutController extends Controller
 {
     public function confirm_order(Request $request){
         $data = $request->all();
-
+        // $feeship = Feeship::where('fee_matp',$data['matp'])->where('fee_maqh',$data['maqh'])->where('fee_xaid',$data['xaid'])->get();
         $shipping = new Shipping();
         $shipping->shipping_name = $data['shipping_name'];
         $shipping->shipping_email = $data['shipping_email'];
         $shipping->shipping_phone = $data['shipping_phone'];
+        $shipping->matp = $data['order_matp'];
+        $shipping->maqh = $data['order_maqh'];
+        $shipping->xaid = $data['order_xaid'];
+              
+        
         $shipping->shipping_address = $data['shipping_address'];
         $shipping->shipping_notes = $data['shipping_notes'];
         $shipping->shipping_method = $data['shipping_method'];
@@ -91,16 +96,23 @@ class CheckoutController extends Controller
     public function calculate_fee(Request $request){
         $data = $request->all();
         if($data['matp']){
-            $feeship = Feeship::where('fee_matp',$data['matp'])->where('fee_maqh',$data['maqh'])->where('fee_xaid',$data['xaid'])->get();
+            $feeship = Feeship::where('fee_matp', $data['matp'])->where('fee_maqh', $data['maqh'])->where('fee_xaid', $data['xaid'])->get();
             if($feeship){
                 $count_feeship = $feeship->count();
-                if($count_feeship>0){
-                     foreach($feeship as $key => $fee){
-                        Session::put('fee',$fee->fee_feeship);
+                if($count_feeship > 0){
+                    foreach($feeship as $key => $value){
+                        Session::put('matp', $data['matp']);
+                        Session::put('maqh', $data['maqh']);
+                        Session::put('xaid', $data['xaid']);
+                        Session::put('fee', $value->fee_feeship);
                         Session::save();
                     }
-                }else{ 
-                    Session::put('fee',35000);
+                }
+                else{
+                    Session::put('matp', $data['matp']);
+                    Session::put('maqh', $data['maqh']);
+                    Session::put('xaid', $data['xaid']);
+                    Session::put('fee', '30000');
                     Session::save();
                 }
             }

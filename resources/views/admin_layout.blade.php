@@ -3,9 +3,10 @@
 <title>Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="csrf-token" content="{{csrf_token()}}"/>
 <meta name="keywords" content="Visitors Responsive web template, Bootstrap Web Templates, Flat Web Templates, Android Compatible web template, 
 Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, SonyEricsson, Motorola web design" />
-<script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
+
 <!-- bootstrap-css -->
 <link rel="stylesheet" href="{{asset('public/backend/css/bootstrap.min.css')}}" >
 <!-- //bootstrap-css -->
@@ -20,9 +21,12 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 <link rel="stylesheet" href="{{asset('public/backend/css/morris.css')}}" type="text/css"/>
 <!-- calendar -->
 <link rel="stylesheet" href="{{asset('public/backend/css/monthly.css')}}">
+<!-- datepicker -->
 <link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-<!-- //calendar -->
-<!-- //font-awesome icons -->
+
+<!-- chart -->
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.css"> 
+
 
 
 </head>
@@ -48,7 +52,7 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
         <!-- user login dropdown start-->
         <li class="dropdown">
             <a data-toggle="dropdown" class="dropdown-toggle" href="#">
-                <img alt="" src="{{('public/backend/images/2.jpg')}}">
+                <img alt="" src="#">
                 <?php
                 $name = Session::get('admin_name');
                 if($name){
@@ -80,6 +84,7 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
                         <span>Tổng Quan</span>
                     </a>
                 </li>
+                
                 <li class="sub-menu">
                     <a href="javascript:;">
                         <i class="fa fa-book"></i>
@@ -182,42 +187,224 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 <script src="{{asset('public/backend/js/jquery.slimscroll.js')}}"></script>
 <script src="{{asset('public/backend/js/jquery.nicescroll.js')}}"></script>
 <script src="{{asset('public/backend/ckeditor/ckeditor.js')}}"></script>
+<!-- datepicker -->
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
-<script type="text/javascript"> 
-    $('#btn-dashboard-filter').click(function(){
-        var _token = $('input[name="_token"]').val();
+<!-- chart -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.5.1/morris.min.js"></script>
+<script type="text/javascript">
+    
+    $(document).ready(function(){
+        load_gallery();
+        function load_gallery(){
+            var pro_id = $('.pro_id').val();
+            var _token = $('input[name="_token"]').val();
+            // alert(pro_id);
+            $.ajax({
+                url : "{{URL::to('/select-gallery')}}",
+                method: 'POST',
+                data:{pro_id:pro_id,_token:_token},
+                success:function(data){
+                   $('#gallery_load').html(data);
+                }
+            });
+            $('#file').change(function(){
+                var error = '';
+                var files = $('#file')[0].files;
 
-        var from_date = $('#datepicker').val();
-        var to_date = $('#datepicker2').val();
+                if(files.length > 5){
+                    error += '<p>Bạn chỉ được chọn tối đa 5 ảnh!</p>'
+                }else if( files.length ==''){
+                    error += '<p>Vui lòng chọn ảnh!</p>'
+                }else if( files.size > 2000000){
+                    error += '<p>Kích thước ảnh lớn hơn 2MB!</p>'
+                }
 
-        $.ajax({
-            url:"{{url('/filter-by-date')}}",
-            method: "POST",
-            dataType: "JSON",
-            data:{from_date:from_date, to_date:to_date, _token:_token},
-            success:function(data){
-                chart.setData(data);
-            }
-        })
+                if(error == ''){
+
+                }else{
+                    $('#file').val('');
+                    $('#error_gallery').html('<span class="text-danger">'+ error + ' </span>');  
+                    return false;  
+                }
+            });
+            $(document).on('blur', '.edit_gal_name',function(){
+                var gal_id = $(this).data('gal_id');
+                var gal_text = $(this).text();
+                var _token = $('input[name="_token"]').val();
+                // alert(gal_id);
+                // alert( gal_text);
+                $.ajax({
+                url : "{{URL::to('/update-gallery-name')}}",
+                method: 'POST',
+                data:{gal_id:gal_id,gal_text:gal_text,_token:_token},
+                success:function(data){
+                    load_gallery();
+                    $('#error_gallery').html('<span class="text-danger">Cập nhật thành công!</span>');  
+                }
+                });
+            });
+            $(document).on('click', '.delete-gallery',function(){
+                var gal_id = $(this).data('gal_id');
+                var _token = $('input[name="_token"]').val();
+                if(confirm('Bạn muốn xóa ảnh này không!')){
+                    $.ajax({
+                        url : "{{URL::to('/delete-gallery')}}",
+                        method: 'POST',
+                        data:{gal_id:gal_id,_token:_token},
+                        success:function(data){
+                            load_gallery();
+                            $('#error_gallery').html('<span class="text-danger">Xóa thành công!</span>');  
+                        }
+                    });
+                }    
+            });
+            $(document).on('change', '.file_image',function(){
+                var gal_id = $(this).data('gal_id');
+                var image = document.getElementById('file-'+gal_id).files[0];
+
+                var form_data = new FormData();
+                form_data.append("file",document.getElementById('file-'+gal_id).files[0]);
+                form_data.append("gal_id",gal_id );
+
+                    $.ajax({
+                        url : "{{URL::to('/update-gallery')}}",
+                        method: 'POST',
+                        headers:{
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        data:form_data,
+                        contentType:false,
+                        cache: false,
+                        processData: false,
+
+                        success:function(data){
+                            load_gallery();
+                            $('#error_gallery').html('<span class="text-danger">Cập nhật ảnh thành công!</span>');  
+                        }
+                    });   
+            });
+        }
     });
 </script>
 <script type="text/javascript">
-    $(function(){
-        $("#datepicker").datepicker({
-            prevText: "Tháng trước",
-            nextText: "Tháng sau",
-            dateFormat: "yy-mm-dd",
-            dayNamesMin: ["Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7","Chủ nhật"],
-            duration: "slow"
+        $(document).ready(function(){
+            fetch_delivery();
+            function fetch_delivery(){
+                var _token = $('input[name="_token"]').val();
+                $.ajax({
+                    url:'{{url('/select-feeship')}}',
+                    method:'POST', //post phải có token
+                    data:{_token:_token},
+                    success:function(data){
+                        $('#load_delivery').html(data);
+                    }
+                });
+            }
+
+            $(document).on('blur', '.fee_feeship_edit', function(){
+                var feeship_id = $(this).data('feeship_id');
+                var feeship_value = $(this).text();
+                var _token = $('input[name="_token"]').val();
+                $.ajax({
+                    url:'{{url('/update-delivery')}}',
+                    method:'POST',
+                    data:{feeship_id:feeship_id,feeship_value:feeship_value,_token:_token},
+                    success:function(data){
+                        fetch_delivery();
+                    }
+                });
+            });
+
+            $('.add_delivery').click(function(){
+                var city = $('.city').val();
+                var province = $('.province').val();
+                var ward = $('.wards').val();
+                var fee_ship = $('.fee_ship').val();
+                var _token = $('input[name="_token"]').val();
+                
+                $.ajax({
+                    url:'{{url('/insert-delivery')}}',
+                    method:'POST',
+                    data:{city:city,province:province,ward:ward,fee_ship:fee_ship,_token:_token},
+                    success:function(data){
+                        fetch_delivery();
+                    }
+                });
+            });
+            
+            $('.choose').on('change', function(){
+                var action = $(this).attr('id');
+                var ma_id = $(this).val();
+                var _token = $('input[name="_token"]').val();
+                var result = '';
+                
+                if(action == 'city'){
+                    result = 'province';
+                }else{
+                    result = 'wards';
+                }
+                $.ajax({
+                    url:'{{url('/select_delivery')}}',
+                    method:'POST',
+                    data:{action:action,ma_id:ma_id,_token:_token},
+                    success:function(data){
+                        $('#'+result).html(data);
+                    }
+                });
+            });
         });
-        $("#datepicker2").datepicker({
-            prevText: "Tháng trước",
-            nextText: "Tháng sau",
-            dateFormat: "yy-mm-dd",
-            dayNamesMin: ["Thứ 2","Thứ 3","Thứ 4","Thứ 5","Thứ 6","Thứ 7","Chủ nhật"],
-            duration: "slow"
+    </script>
+<script type="text/javascript"> 
+    $(document).ready(function(){
+    
+        var chart = new Morris.Bar({
+            element: 'myfirstchart',
+
+            LineColors: ['#000', '#fc8710'],
+            parseTime: false,
+            hideHover: 'auto',
+            
+            xkey: 'period',
+
+            ykeys: ['order','sales','profit','quantity'],
+
+            labels: ['Đơn hàng','Doanh số','Lợi nhuận','Số lượng']
         });
-    })
+        
+        $('.dashboard-filter').change(function(){
+                var _token = $('input[name="_token"]').val();
+                var dashboard_value = $(this).val();
+                
+                $.ajax({
+                    url: '{{url('/dashboard-filter')}}',
+                    method: "POST",
+                    dataType: "JSON",
+                    data:{dashboard_value:dashboard_value, _token:_token},
+                    success:function(data)
+                    {
+                        chart.setData(data);
+                    }
+                });
+        });
+        $('#btn-dashboard-filter').click(function(){
+                var _token = $('input[name="_token"]').val();
+
+                var from_date = $('#datepicker').val();
+                var to_date = $('#datepicker2').val();
+
+                $.ajax({
+                    url:'{{url('/filter-by-date')}}',
+                    method: "POST",
+                    dataType: "JSON",
+                    data:{from_date:from_date, to_date:to_date, _token:_token},
+                    success:function(data)
+                    {
+                        chart.setData(data);
+                    }
+                });
+        });
+    });
 </script>
 <script type="text/javascript">
     $('.update_quantity_order').click(function(){
@@ -225,9 +412,7 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
         var order_qty = $('.order_qty_'+order_product_id).val();
         var order_code = $('.order_code').val();
         var _token = $('input[name="_token"]').val();
-        // alert(order_product_id);
-        // alert(order_qty);
-        // alert(order_code);
+        //alert(order_product_id);
         $.ajax({
                 url : '{{url('/update-qty')}}',
 
@@ -297,7 +482,6 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 <script type="text/javascript">
     $(document).ready(function(){
         fetch_delivery();
-
         function fetch_delivery(){//LẤY dữ liệu bằng jax
             var _token = $('input[name="_token"]').val();
              $.ajax({
@@ -309,26 +493,7 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
                 }
             });
         }
-        $('.add_delivery').click(function(){
-            var city = $('.city').val();
-            var province = $('.province').val();
-            var wards = $('.wards').val();
-            var fee_ship = $('.fee_ship').val();
-            var _token = $('input[name="_token"]').val();
-        //     alert(city);
-        //    alert(province);
-        //    alert(wards);
-        //    alert(fee_ship);
-            $.ajax({
-                url : "{{URL::to('/insert-delivery')}}",
-                method: 'POST',
-                data:{city:city, province:province, wards:wards, fee_ship:fee_ship, _token:_token},
-                success:function(data){
-                    fetch_delivery();
-                }
-            });
-
-        });
+        
         $(document).on('blur','.fee_feeship_edit',function(){
 
             var feeship_id = $(this).data('feeship_id');
@@ -345,27 +510,47 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
                 }
             });
         });
-        $('.choose').on('change',function(){
-            var action = $(this).attr('id');
-            var ma_id = $(this).val();
+        $('.add_delivery').click(function(){
+            var city = $('.city').val();
+            var province = $('.province').val();
+            var wards = $('.wards').val();
+            var fee_ship = $('.fee_ship').val();
             var _token = $('input[name="_token"]').val();
-            var result = '';
-            
-            if(action=='city'){
-                 result ='province';
-             }else{
-                 result = 'wards';
-             }
-             $.ajax({
-                 url : "{{URL::to('/select-delivery')}}",
-                 method: 'POST',
-                 data:{action:action, ma_id:ma_id,_token:_token},
-                 success:function(data){
-                     $('#'+result).html(data);
-                 }
-             });
+    
+            $.ajax({
+                url : "{{URL::to('/insert-delivery')}}",
+                method: 'POST',
+                data:{city:city, province:province, wards:wards, fee_ship:fee_ship, _token:_token},
+                success:function(data){
+                    fetch_delivery();
+                }
+            });
+
         });
-    })
+        $('.choose').on('change', function(){
+                var action = $(this).attr('id');
+                var ma_id = $(this).val();
+                var _token = $('input[name="_token"]').val();
+                var result = '';
+                // alert(action);
+                // alert(ma_id);
+                // alert(_token);
+                
+                if(action == 'city'){
+                    result = 'province';
+                }else{
+                    result = 'ward';
+                }
+                $.ajax({
+                    url:'{{url('/select_delivery')}}',
+                    method:'POST',
+                    data:{action:action,ma_id:ma_id,_token:_token},
+                    success:function(data){
+                        $('#'+result).html(data);
+                    }
+              });
+        });
+    });
 </script> 
 
 <!-- tinh phi van chuyen -->
@@ -468,6 +653,11 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 
 		});
 	</script>
+    <script type="application/x-javascript"> 
+    addEventListener("load", function() 
+    { setTimeout(hideURLbar, 0); }, 
+    false); 
+    function hideURLbar(){ window.scrollTo(0,1); } </script>
 <!-- //calendar -->
 </body>
 </html>

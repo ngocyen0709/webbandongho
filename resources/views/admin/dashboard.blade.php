@@ -14,7 +14,8 @@
             @csrf
             <div class="col-md-2">
                 <p>Từ ngày <input type="text" id="datepicker" class="form-control"></p>
-                <input type="button" id="btn-dashboard-filter" clas="btn btn-primary btn-sm" value="Lọc kết quả">
+
+                <input type="button" id="btn-dashboard-filter" class="btn btn-primary btn-sm" value="Lọc kết quả">
             </div>
             <div class="col-md-2">
             <p>Đến ngày <input type="text" id="datepicker2" class="form-control"></p>
@@ -32,6 +33,9 @@
                 </p>
             </div>
         </form>
+        <div class="col-md-12">
+            <div id="myfirstchart" style="height: 250px;"></div>
+        </div>
     </div>
 </div>
 

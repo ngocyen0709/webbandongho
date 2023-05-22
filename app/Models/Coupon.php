@@ -14,3 +14,4 @@ class Coupon extends Model
     protected $primaryKey  = 'coupon_id';
     protected $table = 'tbl_coupon';
 }
+

@@ -26,7 +26,19 @@
                             <input type="text" data-validation="number" data-validation-error-msg="Làm ơn điền số lượng"
                              name="product_quantity" class="form-control" id="exampleInputEmail1" placeholder="Số lượng sản phẩm">
                         </div>
-                            <div class="form-group">
+                        <div class="form-group">
+                            <label for="exampleInputEmail1">Số lượng đã bán</label>
+                            <input type="text" data-validation="number" data-validation-error-msg="Làm ơn điền số lượng"
+                             name="product_sold" class="form-control" id="exampleInputEmail1" placeholder="Số lượng sản phẩm">
+                        </div>
+                        <div class="form-group">
+                            <label for="exampleInputPassword1" >Màu sắc</label><br>
+                                @foreach($all_color as $key => $color)
+                                    <input class="color_value" type="checkbox" name="product_color" value="{{$color -> color_name}}">
+                                    <label for="exampleInputEmail1">{{$color -> color_name}}</label>
+                                @endforeach
+                        </div>
+                        <div class="form-group">
                             <label for="exampleInputEmail1">Giá sản phẩm</label>
                             <input type="text" name="product_price" class="form-control" id="exampleInputEmail1" placeholder="Giá sản phẩm">
                         </div>

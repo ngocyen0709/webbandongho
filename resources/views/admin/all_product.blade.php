@@ -43,7 +43,9 @@
                 <input type="checkbox"><i></i>
               </label>
             </th>
+            <th>ID </th>
             <th>Tên sản phẩm</th>
+            <th>Thư viện ảnh</th>
             <th>Số lượng</th>
             <th>Giá</th>
             <th>Hình ảnh</th>
@@ -57,7 +59,9 @@
             @foreach($all_product as $key => $pro)
           <tr>
             <td><label class="i-checks m-b-none"><input type="checkbox" name="post[]"><i></i></label></td>
+            <td>{{$pro->product_id}}</td>
               <td>{{$pro ->product_name}}</td>
+              <td><a href="{{url('/add-gallery/'.$pro->product_id)}}">Thêm ảnh</a></td>
               <td>{{$pro->product_quantity}}</td>
               <td>{{($pro->product_price).' '.'VNĐ'}}</td>
              

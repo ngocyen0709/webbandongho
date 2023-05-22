@@ -7,11 +7,17 @@ use Illuminate\Http\Request;
 use App\Models\Feeship;
 use App\Models\Shipping;
 use App\Models\Order;
+use App\Models\Brand;
 use App\Models\OrderDetails;
 use App\Models\Coupon;
 use App\Models\Customer;
 use App\Models\Product;
+use App\Models\City;
+use App\Models\Province;
+use App\Models\Wards;
+use Session;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use DB;
 
 class OderController extends Controller
 {
@@ -21,6 +27,7 @@ class OderController extends Controller
 		$order_details->product_sales_quantity = $data['order_qty'];
 		$order_details->save();
 	}
+	
 	public function update_order_qty(Request $request){
 		//update order
 		$data = $request->all();
@@ -255,7 +262,10 @@ class OderController extends Controller
 		}
 		$customer = Customer::where('customer_id',$customer_id)->first();
 		$shipping = Shipping::where('shipping_id',$shipping_id)->first();
-
+		$tp = City::where('matp', $shipping->matp)->first();
+        $qh = Province::where('maqh', $shipping->maqh)->first();
+        $xp = Wards::where('xaid', $shipping->xaid)->first();
+		
 		$order_details_product = OrderDetails::with('product')->where('order_code', $order_code)->get();
 
 		foreach($order_details_product as $key => $order_d){
@@ -271,11 +281,71 @@ class OderController extends Controller
 			$coupon_number = 0;
 		}
 		
-		return view('admin.view_order')->with(compact('order_details','customer','shipping','order_details','coupon_condition','coupon_number','order','order_status'));
+		return view('admin.view_order')->with(compact('order_details','customer','shipping','order_details','coupon_condition','coupon_number','order','order_status','tp', 'qh', 'xp'));
+
+	}
+	public function view_order_customer(Request $request, $order_code){
+		$meta_desc = "Lịch sử đơn hàng"; 
+		$meta_keywords = "Lịch sử đơn hàng";
+		$meta_title = "SWatch";
+		$url_canonical = $request->url();
+		
+		$cate_product = DB::table('tbl_category_product')->where('category_status','1')->orderby('category_id','desc')->get(); 
+		$brand_product = DB::table('tbl_brand')->where('brand_status','1')->orderby('brand_id','desc')->get(); 
+		$order_details = OrderDetails::with('product')->where('order_code',$order_code)->get();
+		$order = Order::where('order_code',$order_code)->get();
+		foreach($order as $key => $ord){
+			$customer_id = $ord->customer_id;
+			$shipping_id = $ord->shipping_id;
+			$order_status = $ord->order_status;
+		}
+		$customer = Customer::where('customer_id',$customer_id)->first();
+		$shipping = Shipping::where('shipping_id',$shipping_id)->first();
+		$tp = City::where('matp', $shipping->matp)->first();
+        $qh = Province::where('maqh', $shipping->maqh)->first();
+		$xp = Wards::where('xaid', $shipping->xaid)->first();
+		$order_details_product = OrderDetails::with('product')->where('order_code', $order_code)->get();
+
+		foreach($order_details_product as $key => $order_d){
+
+			$product_coupon = $order_d->product_coupon;
+		}
+		if($product_coupon != 'no'){
+			$coupon = Coupon::where('coupon_code',$product_coupon)->first();
+			$coupon_condition = $coupon->coupon_condition;
+			$coupon_number = $coupon->coupon_number;
+		}else{
+			$coupon_condition = 2;
+			$coupon_number = 0;
+		}
+		
+		return view('pages.donhang.show_oder')->with('meta_desc',$meta_desc)->with('meta_keywords',$meta_keywords)
+		->with('meta_title',$meta_title)->with('url_canonical',$url_canonical)->with('category',$cate_product)->with('brand',$brand_product)
+		->with(compact('order_details','customer','shipping','order_details','coupon_condition','coupon_number','order','order_status','tp', 'qh', 'xp'));
 
 	}
     public function manage_order(){
     	$order = Order::orderby('created_at','DESC')->paginate(5);
     	return view('admin.manage_order')->with(compact('order'));
     }
+	public function history(Request $request){
+		if(!Session::get('customer_id')){
+			return redirect('dang-nhap')->with('error','Vui lòng đăng nhập để xem lịch sử đơn hàng');
+		}
+		else{
+			
+    		// return view('pages.history.history')->with(compact('getorder'));
+			$meta_desc = "Lịch sử đơn hàng"; 
+			$meta_keywords = "Lịch sử đơn hàng";
+			$meta_title = "SWatch";
+			$url_canonical = $request->url();
+	
+			$cate_product = DB::table('tbl_category_product')->where('category_status','1')->orderby('category_id','desc')->get(); 
+			$brand_product = DB::table('tbl_brand')->where('brand_status','1')->orderby('brand_id','desc')->get(); 
+			$getorder = Order::where('customer_id',Session::get('customer_id'))->orderby('order_id','DESC')->get();
+			return view('pages.history.history')->with('category',$cate_product)->with('brand',$brand_product)
+				->with('meta_desc',$meta_desc)->with('meta_keywords',$meta_keywords)
+				->with('meta_title',$meta_title)->with('url_canonical',$url_canonical)->with('getorder',$getorder); 
+		}
+	}
 }

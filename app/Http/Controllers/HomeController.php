@@ -8,17 +8,47 @@ use Mail;
 use Session;
 use App\Slider;
 use App\Http\Requests;
+use App\Models\Customer;
 use Illuminate\Support\Facades\Redirect;
 session_start();
 
 class HomeController extends Controller
 {
+    public function edit_infomation_user(Request $request,$customer_id){
+        $meta_desc = "Chuyên bán đồng hồ, nhiều loại"; 
+        $meta_keywords = "dong ho dien tu thong minh";
+        $meta_title = "SWatch";
+        $url_canonical = $request->url();
+        $edit_user = DB::table('tbl_customers')->where('customer_id',$customer_id)->get();
+        $cate_product = DB::table('tbl_category_product')->where('category_status','1')->orderby('category_id','desc')->get(); 
+        $brand_product = DB::table('tbl_brand')->where('brand_status','1')->orderby('brand_id','desc')->get(); 
+
+        return view('admin.edit_user')->with('edit_user',  $edit_user)->with('meta_keywords',$meta_keywords)
+        ->with('meta_title',$meta_title)->with('url_canonical',$url_canonical)->with('meta_desc',$meta_desc)
+        ->with('category',$cate_product)->with('brand',$brand_product);
+    }
+    public function infomation(Request $request){
+        $meta_desc = "Chuyên bán đồng hồ, nhiều loại"; 
+        $meta_keywords = "dong ho dien tu thong minh";
+        $meta_title = "SWatch";
+        $url_canonical = $request->url();
+        $cate_product = DB::table('tbl_category_product')->where('category_status','1')->orderby('category_id','desc')->get(); 
+        $brand_product = DB::table('tbl_brand')->where('brand_status','1')->orderby('brand_id','desc')->get(); 
+
+        $all_product = DB::table('tbl_product')->where('product_status','1')->orderby(DB::raw('RAND()'))->paginate(20);  
+        
+        // $info_user = DB::table('tbl_customers')->where('customer_id', $customer_id)->get();
+        $info_user = Customer::findOrFail($request->customer_id);
+        return view('pages.infomation')->with('category',$cate_product)->with('brand',$brand_product)->with('all_product',$all_product)->with('meta_desc',$meta_desc)->with('meta_keywords',$meta_keywords)
+            ->with('meta_title',$meta_title)->with('url_canonical',$url_canonical)->with('info_user',$info_user);
+          
+    }
     public function index(Request $request){
         $meta_desc = "Chuyên bán đồng hồ, nhiều loại"; 
         $meta_keywords = "dong ho dien tu thong minh";
         $meta_title = "SWatch";
         $url_canonical = $request->url();
-
+         
         $cate_product = DB::table('tbl_category_product')->where('category_status','1')->orderby('category_id','desc')->get(); 
         $brand_product = DB::table('tbl_brand')->where('brand_status','1')->orderby('brand_id','desc')->get(); 
 

@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use DB;
 use Session;
 use App\Http\Requests;
+use App\Models\Customer;
 use Illuminate\Support\Facades\Redirect;
 session_start();
 
@@ -27,11 +28,12 @@ class UserController extends Controller
         $manager_user = view('admin.all_user')->with('all_user', $all_user);
         return view('admin_layout')->with('admin.all_user', $manager_user);
     }
+  
 
     public function unactive_user($customer_id){
         $this->AuthLogin();
         DB::table('tbl_customers')->where('customer_id',$customer_id)->update(['customer_status'=>1]);
-        Session::put('message','hiển thị danh mục sản phẩm thành công');
+        Session::put('message','hiển thị tài khoản thành công');
         return Redirect::to('all-category-product');
 
     }
@@ -49,6 +51,7 @@ class UserController extends Controller
 
         return view('admin_layout')->with('admin.edit_user', $manager_user);
     }
+   
     public function delete_user($user_id){
         $this->AuthLogin();
         DB::table('tbl_customers')->where('customer_id',$user_id)->delete();

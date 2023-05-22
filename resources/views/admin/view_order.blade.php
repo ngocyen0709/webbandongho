@@ -61,12 +61,12 @@
         <thead>
           <tr>
            
-            <th>Tên người vận chuyển</th>
-            <th>Địa chỉ</th>
+            <th>Họ và tên</th>
+            <th>Số nhà</th>
             <th>Số điện thoại</th>
             <th>Email</th>
             <th>Ghi chú</th>
-            <th>Hình thức thanh toán</th>
+            <th>HTTT</th>
           
             
             <th style="width:30px;"></th>
@@ -77,8 +77,7 @@
           <tr>
            
             <td>{{$shipping->shipping_name}}</td>
-            <td>{{$shipping->shipping_address}},</td>
-
+            <td>{{$shipping->shipping_address}},{{$xp->name_xaphuong}}, {{$qh->name_quanhuyen}}, {{$tp->name_city}} </td>
              <td>{{$shipping->shipping_phone}}</td>
              <td>{{$shipping->shipping_email}}</td>
              <td>{{$shipping->shipping_notes}}</td>
